@@ -1,0 +1,13 @@
+# Data Location
+# Celeb-A dataset  <- img shape: (218, 178, 3)
+dataset_dir: "E:/Data_Hub/CelebA_dataset/img_align_celeba"
+
+# img data related
+
+# High resolution image
+H_img_height: 256
+H_img_width: 256
+
+# Low resolution image
+L_img_height: 64   # H_img_height // 4
+L_img_width: 64    # H_img_height // 4

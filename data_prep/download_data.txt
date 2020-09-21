@@ -1,0 +1,15 @@
+Used Data From Kaggle
+https://www.kaggle.com/jessicali9530/celeba-dataset?
+
+
+ImageNet
+REQUIRES 300GB
+requires to manually download
+
+
+COCO
+Use Tensorflow Dataset
+import tensorflow_datasets as tfds
+coco_data = 'Coco'
+coco_datasets, info = tfds.load(coco_data, with_info=True, as_supervised=True)
+
