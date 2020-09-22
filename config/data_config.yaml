@@ -2,6 +2,8 @@
 # Celeb-A dataset  <- img shape: (218, 178, 3)
 dataset_dir: "E:/Data_Hub/CelebA_dataset/img_align_celeba"
 
+dataset_save_path: "./tf_data_save/saved_data
+
 # img data related
 
 # High resolution image
