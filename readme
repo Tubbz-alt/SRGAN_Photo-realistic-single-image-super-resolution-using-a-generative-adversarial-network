@@ -1,5 +1,8 @@
 This Repository is about "Implement SR-GAN"
 ---------------------
+Requirements
+- Tensorflow >= 2.3
+
 
 Resource: 
 - Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network
