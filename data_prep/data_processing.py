@@ -21,6 +21,46 @@ sample_img = r'E:\Data_Hub\CelebA_dataset\img_align_celeba\000001.jpg'
 
 # TODO: REQUIRES TO WRAP WITH CLASS
 
+# V-1
+# DataGenerator Pipeline from tf.keras.image
+class DataGenerator:
+    def __init__(self, config_path):
+        self.config = LoadConfig(config_path)()
+
+    def load_img(self, img_path):
+        img = tf.keras.preprocessing.image.load_img(img_path)
+        img = tf.keras.preprocessing.image.img_to_array(img)
+        return img
+
+    def image_generator(self):
+        for img_path in os.listdir(self.config['dataset_dir']):
+            yield self.load_img(os.path.join(self.config['dataset_dir'], img_path))
+
+
+class DataProcessor:
+    def __init__(self, config_path, generator):
+        self.config = LoadConfig(config_path)()
+        self.generator = generator
+
+    def create_hr_img(self, img):
+        img = tf.cast(img, tf.float32)
+        hr_img = tf.image.resize(img,
+                                 size=(self.config['H_img_height'], self.config['H_img_width']),
+                                 method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+        return hr_img
+
+    def create_lr_img(self, img):
+        img = tf.cast(img, tf.float32)
+        lr_img = tf.image.resize(img,
+                                 size=(self.config['L_img_height'], self.config['L_img_width']),
+                                 method=tf.image.ResizeMethod.BICUBIC)
+        return lr_img
+
+
+
+
+# ---------------------------------------- #
+
 def load_img(img_path):
     img = tf.keras.preprocessing.image.load_img(img_path)
     img = tf.keras.preprocessing.image.img_to_array(img)

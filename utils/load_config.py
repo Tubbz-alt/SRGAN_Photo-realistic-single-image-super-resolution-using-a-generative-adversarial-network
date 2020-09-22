@@ -17,5 +17,7 @@ class LoadConfig:
 
 if __name__ == '__main__':
     config_loader = LoadConfig('./config')
+
+    config_loader
     config = config_loader()
     print(config)
