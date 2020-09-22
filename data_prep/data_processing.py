@@ -22,8 +22,6 @@ sample_img = r'E:\Data_Hub\CelebA_dataset\img_align_celeba\000001.jpg'
 # 3) Add data augmentation, use flip, rotation
 # 4) Data Scaling performes in the architecture, because it requires to use VGG architecture for loss calculation
 
-# TODO: REQUIRES TO WRAP WITH CLASS
-
 # V-1
 # DataGenerator Pipeline from tf.keras.image
 class DataGenerator:
