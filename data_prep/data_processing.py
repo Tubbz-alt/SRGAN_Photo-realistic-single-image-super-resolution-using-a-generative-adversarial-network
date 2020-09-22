@@ -8,7 +8,7 @@ from utils.img_shape_checker import check_data
 import matplotlib.pyplot as plt
 
 # To use the repo, requires to
-assert tf.__version__ >= 2.3
+assert tf.__version__ >= '2.3.0'
 
 # Sample Restore to check
 config = LoadConfig('./config')()
