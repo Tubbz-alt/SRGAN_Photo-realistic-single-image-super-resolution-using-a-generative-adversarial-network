@@ -8,11 +8,7 @@ from utils.img_shape_checker import check_data
 import matplotlib.pyplot as plt
 
 # To use the repo, requires to
-assert tf.__version__ >= '2.3.0'
-
-# Sample Restore to check
-config = LoadConfig('./config')()
-sample_img = r'E:\Data_Hub\CelebA_dataset\img_align_celeba\000001.jpg'
+assert tf.__version__ >= '2.3.0', 'This Repository requires Tensorflow >= 2.3.0'
 
 
 # Data Prepare Strategy
