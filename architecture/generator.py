@@ -5,15 +5,6 @@ import tensorflow as tf
 
 
 
-def minmax_img(x):
-    x = tf.cast(x, tf.float32)
-    return x / 255.
-
-
-def standardize_img(x):
-    x = tf.cast(x, tf.float32)
-    return x / 127.5 - 1
-
 
 def pixel_shuffle(scale):
     return lambda x: tf.nn.depth_to_space(x, block_size=scale)
@@ -88,15 +79,26 @@ class PixelShuffle(tf.keras.layers.Layer):
 
 
 class LRImgScaleLayer(tf.keras.layers.Layer):
+    '''
+    arXiv:1609.04802v5
+    3.2 Training details and parameters
+    We scaled the range of the LR input images to [0, 1]
+    and for the HR images to [−1, 1]. The
+    '''
     def __init_(self, **kwargs):
         super(LRImgScaleLayer, self).__init__(**kwargs)
-        self.normalize = tf.keras.layers.Lambda(lambda x: minmax_img(x))
 
     def call(self, inputs):
-        return self.normalize(inputs)
+        return inputs / 255.
+
 
 
 class SRGenerator(tf.keras.Model):
+    '''
+    Generator takes
+    input:  LR img
+    Output: SR img
+    '''
     def __init__(self, n_res_layers=16, **kwargs):
         super(SRGenerator, self).__init__(**kwargs)
         self.n_res_layers = n_res_layers
@@ -118,7 +120,7 @@ class SRGenerator(tf.keras.Model):
         self.conv_2_bn = tf.keras.layers.BatchNormalization(epsilon=1e-9)
         self.add_layer = tf.keras.layers.Add()
 
-        self.shufflers = [PixelShuffle(filters=256, kernel_size=3, strides=1, padding='same') for _ in range(2)]
+        self.shufflers = [PixelShuffle(filters=256, kernel_size=3, strides=1, padding='same', scale=2) for _ in range(2)]
 
         self.out_layer = tf.keras.layers.Conv2D(filters=3, kernel_size=9, strides=1, padding='same', name='output')
 
@@ -141,6 +143,12 @@ class SRGenerator(tf.keras.Model):
         return self.out_layer(x)
 
 
+
+if __name__ == '__main__':
+    test_generator = SRGenerator(n_res_layers=16)
+    tmp_input = tf.random.normal(shape=(2, 64, 64, 3))
+    test_output = test_generator(tmp_input)
+    test_output[0].shape
 
 
 
