@@ -5,8 +5,12 @@ import tensorflow as tf
 
 
 
+def minmax_img(x):
+    x = tf.cast(x, tf.float32)
+    return x / 255.
 
-def preprocess_img(x):
+
+def standardize_img(x):
     x = tf.cast(x, tf.float32)
     return x / 127.5 - 1
 
@@ -15,9 +19,9 @@ def pixel_shuffle(scale):
     return lambda x: tf.nn.depth_to_space(x, block_size=scale)
 
 
-
 class ResidualConvLayer(tf.keras.layers.Layer):
     '''
+    About PRelu
     The axes along which to share learnable parameters for the activation function.
     For example, if the incoming feature maps are from a 2D convolution with output shape (batch, height, width, channels),
     and you wish to share parameters across space so that each filter only has one set of parameters,
@@ -83,23 +87,21 @@ class PixelShuffle(tf.keras.layers.Layer):
         return self.act(x)
 
 
-
-
-class ImgScaleLayer(tf.keras.layers.Layer):
+class LRImgScaleLayer(tf.keras.layers.Layer):
     def __init_(self, **kwargs):
-        super(ImgScaleLayer, self).__init__(**kwargs)
-        self.normalize = tf.keras.layers.Lambda(lambda x: preprocess_img(x))
+        super(LRImgScaleLayer, self).__init__(**kwargs)
+        self.normalize = tf.keras.layers.Lambda(lambda x: minmax_img(x))
 
     def call(self, inputs):
         return self.normalize(inputs)
 
 
 class SRGenerator(tf.keras.Model):
-    def __init__(self, n_res_layers, **kwargs):
+    def __init__(self, n_res_layers=16, **kwargs):
         super(SRGenerator, self).__init__(**kwargs)
         self.n_res_layers = n_res_layers
 
-        self.normalize_layer = ImgScaleLayer()
+        self.normalize_layer = LRImgScaleLayer()
         self.conv_1 = tf.keras.layers.Conv2D(filters=64,
                                              kernel_size=9,
                                              strides=1,
@@ -121,5 +123,25 @@ class SRGenerator(tf.keras.Model):
         self.out_layer = tf.keras.layers.Conv2D(filters=3, kernel_size=9, strides=1, padding='same', name='output')
 
     def call(self, inputs):
-        pass
+        norm_result = self.normalize_layer(inputs)
+        x = self.conv_1(norm_result)
+        x = self.conv_1_act(x)
+
+        res = x
+
+        for res_layer in self.res_blocks:
+            x = res_layer(x)
+        x = self.conv_2(x)
+        x = self.conv_2_bn(x)
+        x = self.add_layer([x, res])
+
+        for shuffle_layer in self.shufflers:
+            x = shuffle_layer(x)
+
+        return self.out_layer(x)
+
+
+
+
+
 
