@@ -140,7 +140,7 @@ if __name__ == '__main__':
     config_path = './config'
     config_dict = LoadConfig(config_path)()
 
-    dataset = DataCreator(config_dict).create_data(batch_size=16, shuffle=True, check_result=False, augmentation=True, save_tf=False)
+    dataset = DataCreator(config_dict).create_data(batch_size=16, shuffle=False, check_result=False, augmentation=True, save_tf=False)
 
 
 
