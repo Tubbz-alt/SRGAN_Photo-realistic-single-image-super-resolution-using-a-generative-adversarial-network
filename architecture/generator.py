@@ -149,7 +149,3 @@ if __name__ == '__main__':
     tmp_input = tf.random.normal(shape=(2, 64, 64, 3))
     test_output = test_generator(tmp_input)
     test_output[0].shape
-
-
-
-
