@@ -1,7 +1,7 @@
 import ruamel.yaml
 import os
 import tensorflow as tf
-
+import tensorflow_addons as tfa
 from utils.load_config import LoadConfig
 from utils.img_shape_checker import check_data
 
@@ -73,10 +73,27 @@ class DataCreator:
             plt.axis('off')
         plt.show()
 
+    def _simple_rotator(self, hr_img, lr_img):
+        random_factor = tf.random.uniform(())
+        if random_factor > 0.5:
+            hr_img = tfa.image.rotate(hr_img, angles=0.2)
+            lr_img = tfa.image.rotate(lr_img, angles=0.2)
+        return hr_img, lr_img
+
+
+    def _simple_flip(self, hr_img, lr_img):
+        random_factor = tf.random.uniform(())
+        if random_factor > 0.5:
+            hr_img = tf.image.random_flip_left_right(hr_img, seed=42)
+            lr_img = tf.image.random_flip_left_right(lr_img, seed=42)
+        return hr_img, lr_img
+
+
     def create_data(self,
                     batch_size: int,
                     shuffle: bool,
                     check_result: bool,
+                    augmentation: bool,
                     save_tf: bool):
         try:
             full_dataset = tf.data.experimental.load(self.config['dataset_save_path'],
@@ -85,6 +102,10 @@ class DataCreator:
             return full_dataset
 
         except:
+            if os.path.exists(self.config['dataset_save_path']) == False:
+                os.makedirs(self.config['dataset_save_path'])
+                print('Create Data Saver Directory')
+
             dataset = tf.data.Dataset.from_generator(self.generator.image_generator,
                                                      output_types=tf.float32,
                                                      output_shapes=(self.data_shape[0][0],
@@ -94,6 +115,10 @@ class DataCreator:
             hr_dataset = dataset.map(self.dataprocessor.create_hr_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
             lr_dataset = dataset.map(self.dataprocessor.create_lr_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
             full_dataset = tf.data.Dataset.zip((hr_dataset, lr_dataset))
+
+            if augmentation:
+                full_dataset = full_dataset.map(self._simple_rotator, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+                full_dataset = full_dataset.map(self._simple_flip, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
             if check_result:
                 self._check_img_result(full_dataset)
@@ -112,8 +137,19 @@ class DataCreator:
 
 
 if __name__ == '__main__':
-
     config_path = './config'
-    config = LoadConfig(config_path)()
-    dataset = DataCreator(config).create_data(16, False, False, True)
+    config_dict = LoadConfig(config_path)()
 
+    dataset = DataCreator(config_dict).create_data(batch_size=16, shuffle=True, check_result=False, augmentation=True, save_tf=False)
+
+
+
+    for n, (hr_data, lr_data) in enumerate(dataset.take(1)):
+        plt.subplot(1, 2, 1)
+        plt.imshow(hr_data[0].numpy().astype('int'))
+        plt.title('HR_DATA: (256, 256)')
+        plt.subplot(1, 2, 2)
+        plt.imshow(lr_data[0].numpy().astype('int'))
+        plt.title('LR_DATA: (64, 64)')
+        plt.axis('off')
+    plt.show()
