@@ -94,25 +94,12 @@ class ImgScaleLayer(tf.keras.layers.Layer):
         return self.normalize(inputs)
 
 
-# REQUIES TO BE REMOVED
-class ImgAugmentLayer(tf.keras.layers.Layer):
-    def __init__(self, **kwargs):
-        super(ImgAugmentLayer, self).__init__(**kwargs)
-        self.augment = tf.keras.Sequential([tf.keras.layers.experimental.preprocessing.RandomFlip(),
-                                            tf.keras.layers.experimental.preprocessing.RandomRotation(factor=0.2)
-                                            ])
-
-    def call(self, inputs):
-        return self.augment(inputs)
-
-
 class SRGenerator(tf.keras.Model):
     def __init__(self, n_res_layers, **kwargs):
         super(SRGenerator, self).__init__(**kwargs)
         self.n_res_layers = n_res_layers
 
         self.normalize_layer = ImgScaleLayer()
-        self.augment_layer = ImgAugmentLayer()
         self.conv_1 = tf.keras.layers.Conv2D(filters=64,
                                              kernel_size=9,
                                              strides=1,
@@ -134,4 +121,5 @@ class SRGenerator(tf.keras.Model):
         self.out_layer = tf.keras.layers.Conv2D(filters=3, kernel_size=9, strides=1, padding='same', name='output')
 
     def call(self, inputs):
-        prep = self.normalize_layer(inputs)
+        pass
+
