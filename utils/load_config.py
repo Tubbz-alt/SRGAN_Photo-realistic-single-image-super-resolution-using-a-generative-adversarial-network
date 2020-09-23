@@ -8,7 +8,7 @@ class LoadConfig:
         self.config_path = config_path
 
     def __call__(self):
-        with open(self.config_path+'/data_config.yaml', 'rb') as config:
+        with open(str(self.config_path) +'/data_config.yaml', 'rb') as config:
             config_dict = self.yaml.load(config)
         return dict(config_dict)
 
@@ -16,7 +16,7 @@ class LoadConfig:
 
 
 if __name__ == '__main__':
-    config_loader = LoadConfig('./config')
+    config_loader = LoadConfig('config')
 
     config_loader
     config = config_loader()
