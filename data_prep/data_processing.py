@@ -79,12 +79,11 @@ class DataCreator:
                     check_result: bool,
                     save_tf: bool):
         try:
+            full_dataset = tf.data.experimental.load(self.config['dataset_save_path'],
+                                                     element_spec=(tf.TensorSpec(shape=(256, 256, 3), dtype=tf.float32),
+                                                                   tf.TensorSpec(shape=(64, 64, 3), dtype=tf.float32)))
+            return full_dataset
 
-
-                full_dataset = tf.data.experimental.load(self.config['dataset_save_path'],
-                                                         element_spec=(tf.TensorSpec(shape=(256, 256, 3), dtype=tf.float32),
-                                                                       tf.TensorSpec(shape=(64, 64, 3), dtype=tf.float32)))
-                return full_dataset
         except:
             dataset = tf.data.Dataset.from_generator(self.generator.image_generator,
                                                      output_types=tf.float32,
@@ -116,9 +115,5 @@ if __name__ == '__main__':
 
     config_path = './config'
     config = LoadConfig(config_path)()
+    dataset = DataCreator(config).create_data(16, False, False, True)
 
-    config
-
-    dataset = DataCreator(config)
-
-    dataset.create_data(10, True, True, False)
