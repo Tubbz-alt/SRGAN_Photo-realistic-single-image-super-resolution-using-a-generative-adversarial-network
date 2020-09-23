@@ -21,9 +21,9 @@ assert tf.__version__ >= '2.3.0', 'This Repository requires Tensorflow >= 2.3.0'
 # V-1
 # DataGenerator Pipeline from tf.keras.image
 class DataGenerator:
-    def __init__(self, config_path):
-        self.config = LoadConfig(config_path)()
-        self.num_of_imgs = len(os.listdir(self.config))
+    def __init__(self, config: dict):
+        self.config = config
+        self.num_of_imgs = len(os.listdir(self.config['dataset_dir']))
 
     def load_img(self, img_path):
         img = tf.keras.preprocessing.image.load_img(img_path)
@@ -36,8 +36,8 @@ class DataGenerator:
 
 
 class DataProcessor:
-    def __init__(self, config_path, generator):
-        self.config = LoadConfig(config_path)()
+    def __init__(self, config: dict, generator):
+        self.config = config
         self.generator = generator
 
     def create_hr_img(self, img):
@@ -56,15 +56,14 @@ class DataProcessor:
 
 
 class DataCreator:
-    def __init__(self, config_path):
-        self.config_path = config_path
-        self.config = LoadConfig(self.config_path)()
-        self.generator = DataGenerator(self.config_path)
-        self.dataprocessor = DataProcessor(self.config_path, self.generator)
+    def __init__(self, config: dict):
+        self.config = config
+        self.generator = DataGenerator(self.config)
+        self.dataprocessor = DataProcessor(self.config, self.generator)
         self.data_shape = check_data(self.config, 1)
 
     def _check_img_result(self, dataset):
-        for n, (hr_data, lr_data) in dataset.take(1):
+        for n, (hr_data, lr_data) in enumerate(dataset.take(1)):
             plt.subplot(1,2,1)
             plt.imshow(hr_data.numpy().astype('int'))
             plt.title('HR_DATA: (256, 256)')
@@ -79,11 +78,15 @@ class DataCreator:
                     shuffle: bool,
                     check_result: bool,
                     save_tf: bool):
-        if self.config['dataset_save_path'] is not None:
-                full_dataset = tf.data.experimental.load(self.config['dataset_save_path'])
+        try:
 
-        else:
-            dataset = tf.data.Dataset.from_generator(self.generator,
+
+                full_dataset = tf.data.experimental.load(self.config['dataset_save_path'],
+                                                         element_spec=(tf.TensorSpec(shape=(256, 256, 3), dtype=tf.float32),
+                                                                       tf.TensorSpec(shape=(64, 64, 3), dtype=tf.float32)))
+                return full_dataset
+        except:
+            dataset = tf.data.Dataset.from_generator(self.generator.image_generator,
                                                      output_types=tf.float32,
                                                      output_shapes=(self.data_shape[0][0],
                                                                     self.data_shape[0][1],
@@ -106,63 +109,16 @@ class DataCreator:
                 tf.data.experimental.save(full_dataset,
                                           self.config['dataset_save_path'],
                                           compression=None)
-        return full_dataset
+            return full_dataset
 
 
+if __name__ == '__main__':
 
-# # ---------------------------------------- #
-#
-# def load_img(img_path):
-#     img = tf.keras.preprocessing.image.load_img(img_path)
-#     img = tf.keras.preprocessing.image.img_to_array(img)
-#     return img
-#
-# def img_generator():
-#     config = LoadConfig('./config')()
-#     img_dir = config['dataset_dir']
-#     for img_path in os.listdir(img_dir):
-#         yield load_img(os.path.join(img_dir, img_path))
-#
-#
-# def create_hr_img(config, img):
-#     img = tf.cast(img, tf.float32)
-#     hr_img = tf.image.resize(img, size=(config['H_img_height'], config['H_img_width']), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-#     return hr_img
-#
-#
-# def create_lr_img(config, img):
-#     img = tf.cast(img, tf.float32)
-#     lr_img = tf.image.resize(img, size=(config['L_img_height'], config['L_img_width']), method=tf.image.ResizeMethod.BICUBIC)
-#     return lr_img
-#
-#
-#
-#
-# config = LoadConfig('./config')()
-# downloaded_data = check_data(config, 1)
-#
-# dataset = tf.data.Dataset.from_generator(img_generator,
-#                                          output_types=tf.int64,
-#                                          output_shapes=(downloaded_data[0][0],
-#                                                         downloaded_data[0][1],
-#                                                         downloaded_data[0][2]))
-#
-# hr_dataset = dataset.map(lambda x : create_hr_img(config, x))
-# lr_dataset = dataset.map(lambda x: create_lr_img(config, x))
-# zip_data = tf.data.Dataset.zip((hr_dataset, lr_dataset))
-#
-#
-#
-# # Data Checker
-# def show_pair_img(dataset):
-#     for n, (hr, lr) in enumerate(dataset.take(1)):
-#         plt.subplot(1, 2, 1)
-#         plt.imshow(hr.numpy().astype('int'))
-#         plt.title('High Resolution : (256, 256)')
-#         plt.axis('off')
-#
-#         plt.subplot(1, 2, 2)
-#         plt.imshow(lr.numpy().astype('int'))
-#         plt.title('Low Resolution : (64, 64)')
-#         plt.axis('off')
-#     plt.show()
+    config_path = './config'
+    config = LoadConfig(config_path)()
+
+    config
+
+    dataset = DataCreator(config)
+
+    dataset.create_data(10, True, True, False)
