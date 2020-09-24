@@ -15,5 +15,3 @@ def vgg_loss(vgg_model, y_true, y_pred, rescale_factor=1/12.75):
     vgg_y_pred = vgg_model(y_pred)
     result = mse_loss(vgg_y_true, vgg_y_pred)
     return rescale_factor * result
-
-
