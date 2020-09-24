@@ -12,3 +12,6 @@ H_img_width: 256
 # Low resolution image
 L_img_height: 64   # H_img_height // 4
 L_img_width: 64    # H_img_height // 4
+
+
+batch_size: 16
