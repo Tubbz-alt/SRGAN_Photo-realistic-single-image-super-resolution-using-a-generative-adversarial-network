@@ -145,6 +145,9 @@ class SRGenerator(tf.keras.Model):
 
 
 if __name__ == '__main__':
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    tf.config.experimental.set_memory_growth(gpus[0], True)
+
     test_generator = SRGenerator(n_res_layers=16)
     tmp_input = tf.random.normal(shape=(2, 64, 64, 3))
     test_output = test_generator(tmp_input)
