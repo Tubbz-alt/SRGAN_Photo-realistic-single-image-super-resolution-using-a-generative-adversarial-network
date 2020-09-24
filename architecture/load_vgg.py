@@ -44,14 +44,12 @@ if __name__ == '__main__':
 
     tmp_model_22 = LoadVGG('22').load_loss_model()
     tmp_model_22_out = tmp_model_22(test_input)
-    tmp_model_22_out.shape # 2, 128, 128, 128
+    print('model 22', tmp_model_22_out.shape) # 2, 128, 128, 128
 
     tmp_model_54 = LoadVGG('54').load_loss_model()
     tmp_model_54_out = tmp_model_54(test_input)
-    tmp_model_54_out.shape # 2, 16, 16, 512
+    print('model 54', tmp_model_54_out.shape) # 2, 16, 16, 512
 
-
-
-
-
+    full_model = VGGModel('54')
+    print(full_model.vgg_full_model.summary())
 
