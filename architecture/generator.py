@@ -92,7 +92,6 @@ class LRImgScaleLayer(tf.keras.layers.Layer):
         return inputs / 255.
 
 
-
 class SRGenerator(tf.keras.Model):
     '''
     Generator takes
@@ -122,7 +121,7 @@ class SRGenerator(tf.keras.Model):
 
         self.shufflers = [PixelShuffle(filters=256, kernel_size=3, strides=1, padding='same', scale=2) for _ in range(2)]
 
-        self.out_layer = tf.keras.layers.Conv2D(filters=3, kernel_size=9, strides=1, padding='same', name='output')
+        self.out_layer = tf.keras.layers.Conv2D(filters=3, kernel_size=9, strides=1, padding='same', activation='tanh', name='output')
 
     def call(self, inputs):
         norm_result = self.normalize_layer(inputs)
@@ -152,3 +151,5 @@ if __name__ == '__main__':
     tmp_input = tf.random.normal(shape=(2, 64, 64, 3))
     test_output = test_generator(tmp_input)
     test_output[0].shape
+
+
