@@ -17,6 +17,7 @@ dataset = DataCreator(config_dict).create_data(batch_size=config_dict['batch_siz
                                                augmentation=False,
                                                save_tf=False)
 
+
 # Call architectures
 generator = SRGenerator(n_res_layers=16)
 discriminator = SRDiscriminator()
@@ -50,3 +51,48 @@ def calc_disc_loss(disc_hr_img, disc_sr_img):
 generator_optimizer = tf.keras.optimizers.Adam(0.0001, beta_1=0.9)
 discriminator_optimizer = tf.keras.optimizers.Adam(0.0001, beta_1=0.9)
 
+# Checkpoint
+ckpt = tf.train.Checkpoint(generator=generator,
+                           discirminator=discriminator,
+                           generator_optimizer=generator_optimizer,
+                           discriminator_optimizer=discriminator_optimizer)
+
+checkpoint_manager = tf.train.CheckpointManager(ckpt,
+                                                directory = config_dict['log_save_path'],
+                                                max_to_keep = config_dict['max_to_keep'],
+                                                keep_checkpoint_every_n_hours = config_dict['keep_ckpt_n_hours'])
+
+
+# Train Step
+generator_loss_metrics = tf.keras.metrics.Mean(name='Generator Loss')
+discriminator_loss_metrics = tf.keras.metrics.Mean(name='Discriminator Loss')
+
+@tf.function
+def train_step(hr_img, lr_img):
+    with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+        sr_img = generator(lr_img)
+
+        sr_disc = discriminator(sr_img)
+        hr_disc = discriminator(hr_img)
+
+        cont_loss = calc_content_loss(hr_img, sr_img)
+        gen_loss = calc_gen_loss(sr_img)
+        total_loss = cont_loss + (0.001 * gen_loss)
+
+        disc_loss = calc_disc_loss(hr_disc, sr_disc)
+
+    gen_gradient = gen_tape.gradient(total_loss, generator.trainable_variables)
+    disc_gradient = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+    generator_optimizer.apply_gradients(zip(gen_gradient, generator.trainable_variables))
+    discriminator_optimizer.apply_gradients(zip(disc_gradient, discriminator.trainable_variables))
+    generator_loss_metrics.update_state(total_loss)
+    discriminator_loss_metrics.update_state(disc_loss)
+
+
+def train_srgan(EPOCHS):
+    if checkpoint_manager.latest_checkpoint:
+        ckpt.restore(checkpoint_manager.latest_checkpoint)
+        print(f'Restore Latest Checkpoint -- {checkpoint_manager.latest_checkpoint}')
+    for e in range(EPOCHS):
+        for batch_, (hr_img, lr_img) in enumerate(dataset):
+            train_step(hr_img, lr_img)
