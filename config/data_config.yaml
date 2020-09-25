@@ -22,4 +22,7 @@ L_img_width: 64         # H_img_height // 4
 batch_size: 16
 vgg_loss_model: "54"    # 22 or 54
 
-
+epochs: 100
+log_save_path: './model_train/ckpt'
+max_to_keep: 5
+keep_checkpoint_envery_n_hours: 3
