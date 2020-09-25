@@ -88,11 +88,25 @@ def train_step(hr_img, lr_img):
     generator_loss_metrics.update_state(total_loss)
     discriminator_loss_metrics.update_state(disc_loss)
 
+# Tensorboard
+summary_writer = tf.summary.create_file_writer(logdir=config_dict['log_dir'])
 
 def train_srgan(EPOCHS):
     if checkpoint_manager.latest_checkpoint:
         ckpt.restore(checkpoint_manager.latest_checkpoint)
         print(f'Restore Latest Checkpoint -- {checkpoint_manager.latest_checkpoint}')
     for e in range(EPOCHS):
+        step_variable = tf.Variable(0.)
         for batch_, (hr_img, lr_img) in enumerate(dataset):
             train_step(hr_img, lr_img)
+            step_variable += 1
+
+            with summary_writer.set_as_default():
+                tf.summary.scalar(name='Generator Loss',
+                                  data=generator_loss_metrics.result(),
+                                  step=step_variable)
+
+                tf.summary.scalar(name='Discriminator Loss',
+                                  data=discriminator_loss_metrics.result(),
+                                  step=step_variable)
+
