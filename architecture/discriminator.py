@@ -19,9 +19,9 @@ class ConvLayer(tf.keras.layers.Layer):
         return self.conv_act(x)
 
 
-class Discriminator(tf.keras.Model):
+class SRDiscriminator(tf.keras.Model):
     def __init__(self, **kwargs):
-        super(Discriminator, self).__init__(**kwargs)
+        super(SRDiscriminator, self).__init__(**kwargs)
         self.conv_1 = tf.keras.layers.Conv2D(filters=64,
                                              kernel_size=3,
                                              strides=1,
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     gpus = tf.config.experimental.list_physical_devices('GPU')
     tf.config.experimental.set_memory_growth(gpus[0], True)
 
-    test_discriminator = Discriminator()
+    test_discriminator = SRDiscriminator()
     tmp_input = tf.random.normal(shape=(2, 256, 256, 3))
 
     test_output = test_discriminator(tmp_input)
