@@ -26,3 +26,6 @@ epochs: 100
 log_save_path: './model_train/ckpt'
 max_to_keep: 5
 keep_checkpoint_envery_n_hours: 3
+
+# Tensorboard
+log_dir: './logs/
